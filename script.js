@@ -64,7 +64,18 @@ async function switchNetworkTo(chainName) {
     alert("Please select a valid chain.");
     return;
   }
-  await switchNetwork(chainDetails);
+  const wasSwitchSuccessful = await switchNetwork(chainDetails);
+
+  // Check if the network switch was successful
+  if (wasSwitchSuccessful) {
+    // Inverse the colors
+    document.body.style.backgroundColor = "#FFFFFF"; // White background
+    const windows = document.querySelectorAll(".window");
+    windows.forEach((win) => {
+      win.style.background = "#008080"; // Original body color for the window
+      win.style.color = "#FFFFFF"; // Assuming you want to invert text color too
+    });
+  }
 }
 
 async function switchNetwork(chainDetails) {
@@ -73,12 +84,7 @@ async function switchNetwork(chainDetails) {
       method: "wallet_switchEthereumChain",
       params: [{ chainId: "0x" + chainDetails.chainId.toString(16) }],
     });
-    // if there is a redirectUrl, we wait for 3 seconds before redirecting
-    const redirectUrl = document.getElementById("redirectUrl").value;
-    if (redirectUrl) {
-      await new Promise((resolve) => setTimeout(resolve, 3000));
-      window.location.href = "https://" + redirectUrl;
-    }
+    return true; // Indicate the switch was successful
   } catch (error) {
     if (error.code === 4902) {
       try {
@@ -94,10 +100,12 @@ async function switchNetwork(chainDetails) {
             },
           ],
         });
+        return true; // Indicate the switch was successful after adding a new network
       } catch (addError) {
         console.error(addError);
       }
     }
+    return false; // Indicate the switch was not successful
   }
 }
 
