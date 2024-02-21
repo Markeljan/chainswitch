@@ -66,25 +66,25 @@ async function switchNetworkTo(chainName) {
   }
   const wasSwitchSuccessful = await switchNetwork(chainDetails);
 
-  // Check if the network switch was successful
+  // If the switch was successful, change the background color and redirect to the URL
   if (wasSwitchSuccessful) {
-    // Inverse UI colors before redirecting
     document.body.style.backgroundColor = "#000000";
     const windowElements = document.getElementsByClassName("window");
     const urlElements = document.getElementsByClassName("url-input");
     const retroElements = document.getElementsByClassName("retro-btn");
-    windowElements.forEach((win) => {
+    for (const win of windowElements) {
       win.style.background = "#008080";
       win.style.color = "#FFFFFF";
-    });
-    urlElements.forEach((url) => {
+    }
+    for (const url of urlElements) {
       url.style.background = "#000000";
       url.style.color = "#FFFFFF";
-    });
-    retroElements.forEach((btn) => {
+    }
+    for (const btn of retroElements) {
       btn.style.background = "#000000";
       btn.style.color = "#FFFFFF";
-    });
+    }
+
     await new Promise((resolve) => setTimeout(resolve, 1000));
     const redirectUrl = "https://" + document.getElementById("redirectUrl").value;
     window.location.href = redirectUrl;
