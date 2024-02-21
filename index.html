@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MetaMask Network Switcher</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="window">
+      <div class="title-bar">
+        <div class="title-bar-text">MetaMask Network Switcher</div>
+      </div>
+      <div class="window-body">
+        <p>Select a network to easily add or switch to it. Useful for sharing links to dApps on different networks.</p>
+        <select id="chainSelect"></select>
+        <div class="url-input">
+          <span>https://</span><input type="text" id="redirectUrl" placeholder="example.com" />
+        </div>
+        <div class="button-container">
+          <button id="copyLink" class="retro-btn">Share Link</button>
+          <button id="switchNetwork" class="retro-btn">Add/Switch Chain</button>
+          <button id="goToLink" class="retro-btn">Go to Link</button>
+        </div>
+      </div>
+    </div>
+    <script src="chains.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>

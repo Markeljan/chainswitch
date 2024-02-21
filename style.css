@@ -1,0 +1,90 @@
+body {
+  background-color: #008080;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-family: "Pixelated MS Sans Serif", "Arial", sans-serif;
+}
+
+.window {
+  background: white;
+  border: 2px solid #000;
+  box-shadow: 4px 4px 0 #000;
+}
+
+.title-bar {
+  background: #0052fd;
+  display: flex;
+  padding: 2px 4px;
+  color: white;
+}
+
+.title-bar-text {
+  flex-grow: 1;
+}
+
+.window-body {
+  padding: 8px;
+}
+
+select,
+.url-input input {
+  width: 100%;
+  padding: 5px;
+  margin: 5px 0;
+  font-size: 16px;
+}
+
+.url-input {
+  display: flex;
+  align-items: center;
+  margin: 5px 0;
+}
+
+.url-input span {
+  background: #fff;
+  border: 2px outset #000;
+  padding: 5px 10px;
+  color: #000;
+  font-family: "Pixelated MS Sans Serif", "Arial", sans-serif;
+}
+
+.retro-btn {
+  background: #fff;
+  border: 2px outset #000;
+  color: #000;
+  padding: 5px 10px;
+  margin-top: 5px;
+  font-family: "Pixelated MS Sans Serif", "Arial", sans-serif;
+  cursor: pointer;
+  width: calc(100% - 14px);
+}
+
+.retro-btn:hover,
+.retro-btn:focus {
+  background: #ff6500;
+  color: #fff;
+}
+
+.retro-btn:active {
+  border-style: inset;
+}
+
+.button-container {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.button-container > * {
+  flex: 1 1 33%;
+}
+
+.button-container > *:nth-child(1) {
+  flex: 1 1 33%;
+}
+
+.button-container > *:nth-child(2),
+.button-container > *:nth-child(3) {
+  flex: 1 1 66%;
+}
