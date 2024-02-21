@@ -7,25 +7,28 @@ async function initializeChainDropdown() {
     chainSelect?.appendChild(option);
   });
 
-  // Set chain from URL params if present
+  // Set chain from URL params if present, trying to find the closest match
   const urlParams = new URLSearchParams(window.location.search);
-  const chain = urlParams.get("chain");
-  if (chain) {
-    chainSelect.value = chain;
-  }
-}
+  const chainParam = urlParams.get("chain");
+  if (chainParam) {
+    let bestMatch = { option: null, distance: Infinity };
+    Array.from(chainSelect.options).forEach((option) => {
+      const distance = levenshteinDistance(chainParam.toLowerCase(), option.value.toLowerCase());
+      if (distance < bestMatch.distance) {
+        bestMatch = { option, distance };
+      }
+    });
 
-function setupShareLinkButton() {
-  const shareLinkButton = document.getElementById("copyLink");
-  shareLinkButton.addEventListener("click", async () => {
-    try {
-      const fullUrl = window.location.href;
-      await navigator.clipboard.writeText(fullUrl);
-      alert("Link copied to clipboard!");
-    } catch (err) {
-      console.error("Failed to copy: ", err);
+    if (bestMatch.option) {
+      chainSelect.value = bestMatch.option.value;
     }
-  });
+  }
+
+  // Update redirect URL input field if 'redirect' param is present
+  const redirectParam = urlParams.get("redirect");
+  if (redirectParam) {
+    document.getElementById("redirectUrl").value = decodeURIComponent(redirectParam).replace(/^https?:\/\//, "");
+  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -90,6 +93,19 @@ async function switchNetwork(chainDetails) {
       }
     }
   }
+}
+
+function setupShareLinkButton() {
+  const shareLinkButton = document.getElementById("copyLink");
+  shareLinkButton.addEventListener("click", async () => {
+    try {
+      const fullUrl = window.location.href;
+      await navigator.clipboard.writeText(fullUrl);
+      alert("Link copied to clipboard!");
+    } catch (err) {
+      console.error("Failed to copy: ", err);
+    }
+  });
 }
 
 function updateUrlParams(key, value) {
