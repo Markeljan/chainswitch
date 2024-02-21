@@ -71,20 +71,6 @@ select,
   border-style: inset;
 }
 
-.button-container {
+.button-row {
   display: flex;
-  flex-wrap: wrap;
-}
-
-.button-container > * {
-  flex: 1 1 33%;
-}
-
-.button-container > *:nth-child(1) {
-  flex: 1 1 33%;
-}
-
-.button-container > *:nth-child(2),
-.button-container > *:nth-child(3) {
-  flex: 1 1 66%;
 }
