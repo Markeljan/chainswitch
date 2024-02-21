@@ -28,6 +28,12 @@ body {
   padding: 8px;
 }
 
+.window-actions {
+  display: flex;
+  flex-direction: column;
+  padding: 0 8px;
+}
+
 select,
 .url-input input {
   width: 100%;

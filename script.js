@@ -55,7 +55,7 @@ document.getElementById("switchNetwork")?.addEventListener("click", async () => 
 
 document.getElementById("goToLink")?.addEventListener("click", () => {
   const redirectUrl = "https://" + document.getElementById("redirectUrl").value;
-  window.open(redirectUrl);
+  window.location.href = redirectUrl;
 });
 
 async function switchNetworkTo(chainName) {
@@ -73,6 +73,12 @@ async function switchNetwork(chainDetails) {
       method: "wallet_switchEthereumChain",
       params: [{ chainId: "0x" + chainDetails.chainId.toString(16) }],
     });
+    // if there is a redirectUrl, we wait for 3 seconds before redirecting
+    const redirectUrl = document.getElementById("redirectUrl").value;
+    if (redirectUrl) {
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+      window.location.href = "https://" + redirectUrl;
+    }
   } catch (error) {
     if (error.code === 4902) {
       try {

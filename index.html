@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="favicon.ico" type="image/x-icon" />
-    <!-- <script defer src="/_vercel/insights/script.js"></script> -->
+    <script defer src="/_vercel/insights/script.js"></script>
     <link rel="stylesheet" href="style.css" />
     <title>MetaMask Network Switcher</title>
     <meta name="description" content="Simple network switcher." />
@@ -16,15 +16,17 @@
       </div>
       <div class="window-body">
         <p>Select a network to easily add or switch to it. Useful for sharing links to dApps on different networks.</p>
-        <select id="chainSelect"></select>
-        <div class="url-input">
-          <span>https://</span><input type="text" id="redirectUrl" placeholder="example.com" />
-        </div>
-        <div class="button-container">
-          <button id="switchNetwork" class="retro-btn">Add/Switch Chain</button>
-          <div class="button-row">
-            <button id="copyLink" class="retro-btn">Copy ChainSwitch URL</button>
-            <button id="goToLink" class="retro-btn">Go to Link</button>
+        <div class="window-actions">
+          <select id="chainSelect"></select>
+          <div class="url-input">
+            <span>https://</span><input type="text" id="redirectUrl" placeholder="example.com" />
+          </div>
+          <div class="button-container">
+            <button id="switchNetwork" class="retro-btn">Add/Switch Chain</button>
+            <div class="button-row">
+              <button id="copyLink" class="retro-btn">Copy ChainSwitch URL</button>
+              <button id="goToLink" class="retro-btn">Go to Link</button>
+            </div>
           </div>
         </div>
       </div>
