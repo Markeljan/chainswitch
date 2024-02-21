@@ -71,6 +71,11 @@ select,
   border-style: inset;
 }
 
+.button-container {
+  display: flex;
+  flex-direction: column;
+}
+
 .button-row {
   display: flex;
 }
