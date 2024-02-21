@@ -167,21 +167,18 @@ function makeWindowDraggable() {
   let offsetY = 0;
 
   titleBar.addEventListener("mousedown", function (e) {
-    console.log("mousedown");
     isDragging = true;
     offsetX = e.clientX - dragWindow.offsetLeft;
     offsetY = e.clientY - dragWindow.offsetTop;
   });
 
   document.addEventListener("mousemove", function (e) {
-    console.log("mousemove");
     if (!isDragging) return;
     dragWindow.style.left = `${e.clientX - offsetX}px`;
     dragWindow.style.top = `${e.clientY - offsetY}px`;
   });
 
   document.addEventListener("mouseup", function () {
-    console.log("mouseup");
     isDragging = false;
   });
 }
