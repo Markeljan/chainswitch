@@ -68,13 +68,26 @@ async function switchNetworkTo(chainName) {
 
   // Check if the network switch was successful
   if (wasSwitchSuccessful) {
-    // Inverse the colors
-    document.body.style.backgroundColor = "#FFFFFF"; // White background
-    const windows = document.querySelectorAll(".window");
-    windows.forEach((win) => {
-      win.style.background = "#008080"; // Original body color for the window
-      win.style.color = "#FFFFFF"; // Assuming you want to invert text color too
+    // Inverse UI colors before redirecting
+    document.body.style.backgroundColor = "#000000";
+    const windowElements = document.getElementsByClassName("window");
+    const urlElements = document.getElementsByClassName("url-input");
+    const retroElements = document.getElementsByClassName("retro-btn");
+    windowElements.forEach((win) => {
+      win.style.background = "#008080";
+      win.style.color = "#FFFFFF";
     });
+    urlElements.forEach((url) => {
+      url.style.background = "#000000";
+      url.style.color = "#FFFFFF";
+    });
+    retroElements.forEach((btn) => {
+      btn.style.background = "#000000";
+      btn.style.color = "#FFFFFF";
+    });
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const redirectUrl = "https://" + document.getElementById("redirectUrl").value;
+    window.location.href = redirectUrl;
   }
 }
 
