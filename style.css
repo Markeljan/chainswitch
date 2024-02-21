@@ -58,7 +58,7 @@ select,
   margin-top: 5px;
   font-family: "Pixelated MS Sans Serif", "Arial", sans-serif;
   cursor: pointer;
-  width: calc(100% - 14px);
+  width: 100%;
 }
 
 .retro-btn:hover,
