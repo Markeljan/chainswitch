@@ -35,6 +35,9 @@ document.addEventListener("DOMContentLoaded", () => {
   initializeChainDropdown();
   updateGoToLinkButtonState();
   setupShareLinkButton();
+
+  // Draggable functionality
+  makeWindowDraggable();
 });
 
 document.getElementById("chainSelect")?.addEventListener("change", (e) => {
@@ -49,6 +52,12 @@ document.getElementById("redirectUrl")?.addEventListener("input", (e) => {
 });
 
 document.getElementById("switchNetwork")?.addEventListener("click", async () => {
+  const currentChainId = await window.ethereum.request({ method: "eth_chainId" });
+  const chainDetails = chains.find((chain) => chain.chainId === parseInt(currentChainId, 16));
+  if (chainDetails?.name === document.getElementById("chainSelect").value) {
+    alert("You are already on the selected network.");
+    return;
+  }
   const chainName = document.getElementById("chainSelect").value;
   await switchNetworkTo(chainName);
 });
@@ -145,4 +154,31 @@ function updateGoToLinkButtonState() {
   const goToLinkButton = document.getElementById("goToLink");
   const redirectUrl = document.getElementById("redirectUrl").value;
   goToLinkButton.disabled = !redirectUrl;
+}
+
+function makeWindowDraggable() {
+  const titleBar = document.querySelector(".title-bar");
+  const dragWindow = document.querySelector(".window");
+
+  if (!titleBar || !dragWindow) return;
+
+  let isDragging = false;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  titleBar.addEventListener("mousedown", function (e) {
+    isDragging = true;
+    offsetX = e.clientX - dragWindow.offsetLeft;
+    offsetY = e.clientY - dragWindow.offsetTop;
+  });
+
+  document.addEventListener("mousemove", function (e) {
+    if (!isDragging) return;
+    dragWindow.style.left = `${e.clientX - offsetX}px`;
+    dragWindow.style.top = `${e.clientY - offsetY}px`;
+  });
+
+  document.addEventListener("mouseup", function () {
+    isDragging = false;
+  });
 }
