@@ -31,7 +31,7 @@ body {
 .window-actions {
   display: flex;
   flex-direction: column;
-  padding: 0 8px;
+  padding: 4px;
 }
 
 select,
