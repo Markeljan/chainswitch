@@ -121,8 +121,11 @@ function updateGoToLinkButtonState() {
 
 function setupGoToLinkButton() {
   const goToLinkButton = document.getElementById("goToLink");
-  goToLinkButton?.addEventListener("click", () => {
-    const redirectUrl = document.getElementById("redirectUrl").value;
+  const redirectUrl = document.getElementById("redirectUrl")?.value;
+  goToLinkButton.disabled = !redirectUrl;
+
+  goToLinkButton.addEventListener("click", () => {
+    const redirectUrl = document.getElementById("redirectUrl")?.value;
     if (!goToLinkButton.disabled && redirectUrl) {
       window.open(`https://${redirectUrl}`, "_blank");
     }
