@@ -1,184 +1,271 @@
-async function initializeChainDropdown() {
+document.addEventListener("DOMContentLoaded", initializeApp);
+
+async function initializeApp() {
+  setupChainDropdown();
+  setupRedirectFromUrl();
+  setupEventListeners();
+}
+
+async function setupChainDropdown() {
   const chainSelect = document.getElementById("chainSelect");
-  chains.forEach((chain) => {
+  if (!chainSelect) return;
+
+  for (const chain of CHAINS) {
     const option = document.createElement("option");
-    option.value = chain.name;
-    option.textContent = chain.name;
-    chainSelect?.appendChild(option);
-  });
-
-  // Set chain from URL params if present, trying to find the closest match
-  const urlParams = new URLSearchParams(window.location.search);
-  const chainParam = urlParams.get("chain");
-  if (chainParam) {
-    let bestMatch = { option: null, distance: Infinity };
-    Array.from(chainSelect.options).forEach((option) => {
-      const distance = levenshteinDistance(chainParam.toLowerCase(), option.value.toLowerCase());
-      if (distance < bestMatch.distance) {
-        bestMatch = { option, distance };
-      }
-    });
-
-    if (bestMatch.option) {
-      chainSelect.value = bestMatch.option.value;
-    }
+    option.value = option.textContent = chain.name;
+    chainSelect.appendChild(option);
   }
 
-  // Update redirect URL input field if 'redirect' param is present
-  const redirectParam = urlParams.get("redirect");
-  if (redirectParam) {
-    document.getElementById("redirectUrl").value = decodeURIComponent(redirectParam).replace(/^https?:\/\//, "");
+  await setInitialChainSelection(chainSelect);
+}
+
+async function setInitialChainSelection(chainSelect) {
+  const chainValue = new URLSearchParams(window.location.search).get("chain") || (await getCurrentChain()) || 1;
+
+  const chainDetails = getChainDetails(chainValue);
+
+  chainSelect.value = chainDetails.name;
+}
+
+function getChainDetails(chainValue) {
+  //chainValue could be a number as a string
+  if (!isNaN(chainValue)) {
+    return CHAINS.find((chain) => chain.chainId === parseInt(chainValue)) || CHAINS[0];
+  }
+  // try to find a direct match first
+  const directMatch = CHAINS.find(
+    ({ name, shortName }) =>
+      name.localeCompare(chainValue, "en", { sensitivity: "base" }) === 0 ||
+      shortName.localeCompare(chainValue, "en", { sensitivity: "base" }) === 0
+  );
+  if (directMatch) {
+    return directMatch;
+  }
+
+  // if no direct match, find the closest match
+  const lowercaseChainNames = CHAINS.map(({ name }) => name.toLowerCase());
+  const distances = lowercaseChainNames.map((name) => levenshteinDistance(name, chainValue));
+  const minDistance = Math.min(...distances);
+  const bestNameMatch = CHAINS[distances.indexOf(minDistance)].name;
+  return CHAINS.find(({ name }) => name === bestNameMatch) || CHAINS[0];
+}
+
+function setupRedirectFromUrl() {
+  const redirectParam = new URLSearchParams(window.location.search).get("redirect");
+  if (!redirectParam) return;
+
+  const redirectUrlInput = document.getElementById("redirectUrl");
+  if (redirectUrlInput) {
+    redirectUrlInput.value = decodeURIComponent(redirectParam).replace(/^https?:\/\//, "");
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  initializeChainDropdown();
-  updateGoToLinkButtonState();
-  setupShareLinkButton();
-
-  // Draggable functionality
-  makeWindowDraggable();
-});
-
-document.getElementById("chainSelect")?.addEventListener("change", (e) => {
-  const chainName = e.target.value;
-  updateUrlParams("chain", chainName);
-});
-
-document.getElementById("redirectUrl")?.addEventListener("input", (e) => {
-  const redirectUrl = e.target.value;
-  updateUrlParams("redirect", redirectUrl);
-  updateGoToLinkButtonState();
-});
-
-document.getElementById("switchNetwork")?.addEventListener("click", async () => {
-  const currentChainId = await window.ethereum.request({ method: "eth_chainId" });
-  const chainDetails = chains.find((chain) => chain.chainId === parseInt(currentChainId, 16));
-  if (chainDetails?.name === document.getElementById("chainSelect").value) {
-    alert("You are already on the selected network.");
-    return;
-  }
-  const chainName = document.getElementById("chainSelect").value;
-  await switchNetworkTo(chainName);
-});
-
-document.getElementById("goToLink")?.addEventListener("click", () => {
-  const redirectUrl = "https://" + document.getElementById("redirectUrl").value;
-  window.location.href = redirectUrl;
-});
-
-async function switchNetworkTo(chainName) {
-  const chainDetails = chains.find((chain) => chain.name === chainName);
-  if (!chainDetails) {
-    alert("Please select a valid chain.");
-    return;
-  }
-  const wasSwitchSuccessful = await switchNetwork(chainDetails);
-
-  // If the switch was successful, change the background color and redirect to the URL
-  if (wasSwitchSuccessful) {
-    document.body.style.backgroundColor = "#000000";
-    const windowElements = document.getElementsByClassName("window");
-    const urlElements = document.getElementsByClassName("url-input");
-    const retroElements = document.getElementsByClassName("retro-btn");
-    for (const win of windowElements) {
-      win.style.background = "#008080";
-      win.style.color = "#FFFFFF";
-    }
-    for (const url of urlElements) {
-      url.style.background = "#000000";
-      url.style.color = "#FFFFFF";
-    }
-    for (const btn of retroElements) {
-      btn.style.background = "#000000";
-      btn.style.color = "#FFFFFF";
-    }
-
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    const redirectUrl = "https://" + document.getElementById("redirectUrl").value;
-    window.location.href = redirectUrl;
-  }
+function setupEventListeners() {
+  setupModalListeners();
+  setupNetworkSwitchListener();
+  setupUrlParamListeners();
+  setupCopyLinkButton();
+  setupDraggableWindow();
+  setupGoToLinkButton();
 }
 
-async function switchNetwork(chainDetails) {
-  try {
-    await window.ethereum.request({
-      method: "wallet_switchEthereumChain",
-      params: [{ chainId: "0x" + chainDetails.chainId.toString(16) }],
-    });
-    return true; // Indicate the switch was successful
-  } catch (error) {
-    if (error.code === 4902) {
-      try {
-        await window.ethereum.request({
-          method: "wallet_addEthereumChain",
-          params: [
-            {
-              chainId: "0x" + chainDetails.chainId.toString(16),
-              rpcUrls: chainDetails.rpc,
-              chainName: chainDetails.name,
-              nativeCurrency: chainDetails.nativeCurrency,
-              blockExplorerUrls: [chainDetails.infoURL],
-            },
-          ],
-        });
-        return true; // Indicate the switch was successful after adding a new network
-      } catch (addError) {
-        console.error(addError);
-      }
-    }
-    return false; // Indicate the switch was not successful
-  }
+function setupModalListeners() {
+  document.getElementById("closeAlert")?.addEventListener("click", closeAlert);
+  document.querySelector(".close")?.addEventListener("click", closeAlert);
 }
 
-function setupShareLinkButton() {
-  const shareLinkButton = document.getElementById("copyLink");
-  shareLinkButton.addEventListener("click", async () => {
-    try {
-      const fullUrl = window.location.href;
-      await navigator.clipboard.writeText(fullUrl);
-      alert("Link copied to clipboard!");
-    } catch (err) {
-      console.error("Failed to copy: ", err);
-    }
+function setupNetworkSwitchListener() {
+  document.getElementById("switchNetwork")?.addEventListener("click", switchNetworkListener);
+}
+
+async function switchNetworkListener() {
+  if (!window.ethereum) return showAlert("No wallet detected.");
+
+  const chainSelect = document.getElementById("chainSelect");
+  const currentChain = await getCurrentChain();
+  const selectedChainName = chainSelect.value;
+  const chainDetails = CHAINS.find((chain) => chain.name === selectedChainName);
+
+  if (!chainDetails || chainDetails.chainId === currentChain) {
+    return showAlert(chainDetails ? "You are already on the selected network." : "Please select a valid chain.");
+  }
+
+  await switchNetwork(chainDetails);
+}
+
+async function getCurrentChain() {
+  const chainIdHex = await window.ethereum.request({ method: "eth_chainId" });
+  return parseInt(chainIdHex, 16);
+}
+
+function setupUrlParamListeners() {
+  document.getElementById("chainSelect")?.addEventListener("change", (e) => updateUrlParams("chain", e.target.value));
+  document.getElementById("redirectUrl")?.addEventListener("input", (e) => {
+    updateGoToLinkButtonState();
+    updateUrlParams("redirect", e.target.value);
   });
 }
-
-function updateUrlParams(key, value) {
-  const url = new URL(window.location);
-  url.searchParams.set(key, value);
-  window.history.pushState({}, "", url);
-}
-
 function updateGoToLinkButtonState() {
   const goToLinkButton = document.getElementById("goToLink");
   const redirectUrl = document.getElementById("redirectUrl").value;
+
+  // Enable or disable the button based on redirectUrl content
   goToLinkButton.disabled = !redirectUrl;
+
+  if (redirectUrl) {
+    goToLinkButton.classList.remove("retro-btn-disabled");
+  } else {
+    goToLinkButton.classList.add("retro-btn-disabled");
+  }
 }
 
-function makeWindowDraggable() {
+function setupGoToLinkButton() {
+  const goToLinkButton = document.getElementById("goToLink");
+  goToLinkButton?.addEventListener("click", () => {
+    const redirectUrl = document.getElementById("redirectUrl").value;
+    if (!goToLinkButton.disabled && redirectUrl) {
+      window.open(`https://${redirectUrl}`, "_blank");
+    }
+  });
+}
+
+function setupCopyLinkButton() {
+  document.getElementById("copyLink")?.addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      showAlert("✔ copied to clipboard");
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  });
+}
+
+function setupDraggableWindow() {
   const titleBar = document.querySelector(".title-bar");
   const dragWindow = document.querySelector(".window");
-
   if (!titleBar || !dragWindow) return;
 
   let isDragging = false;
   let offsetX = 0;
   let offsetY = 0;
 
-  titleBar.addEventListener("mousedown", function (e) {
+  titleBar.addEventListener("mousedown", startDrag);
+  document.addEventListener("mousemove", drag);
+  document.addEventListener("mouseup", () => (isDragging = false));
+
+  function startDrag(e) {
     isDragging = true;
     offsetX = e.clientX - dragWindow.offsetLeft;
     offsetY = e.clientY - dragWindow.offsetTop;
-  });
+  }
 
-  document.addEventListener("mousemove", function (e) {
+  function drag(e) {
     if (!isDragging) return;
     dragWindow.style.left = `${e.clientX - offsetX}px`;
     dragWindow.style.top = `${e.clientY - offsetY}px`;
-  });
+  }
+}
 
-  document.addEventListener("mouseup", function () {
-    isDragging = false;
-  });
+function showAlert(message) {
+  const alertModal = document.getElementById("alertModal");
+  const alertMessage = document.getElementById("alertMessage");
+  if (!alertModal || !alertMessage) return;
+
+  alertMessage.innerHTML = message;
+  alertModal.style.display = "block";
+}
+
+function closeAlert() {
+  const alertModal = document.getElementById("alertModal");
+  if (alertModal) alertModal.style.display = "none";
+}
+
+async function switchNetwork(chainDetails) {
+  try {
+    await window.ethereum.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: `0x${chainDetails.chainId.toString(16)}` }],
+    });
+    handleNetworkSwitchSuccess();
+    return true;
+  } catch (error) {
+    if (error.code === 4902) {
+      return tryAddingNewChain(chainDetails);
+    }
+    console.error(error);
+    return false;
+  }
+}
+
+async function tryAddingNewChain(chainDetails) {
+  try {
+    await window.ethereum.request({
+      method: "wallet_addEthereumChain",
+      params: [getChainParams(chainDetails)],
+    });
+    handleNetworkSwitchSuccess();
+    return true;
+  } catch (addError) {
+    console.error(addError);
+    return false;
+  }
+}
+
+function getChainParams(chainDetails) {
+  return {
+    chainId: `0x${chainDetails.chainId.toString(16)}`,
+    rpcUrls: chainDetails.rpc,
+    chainName: chainDetails.name,
+    nativeCurrency: chainDetails.nativeCurrency,
+    blockExplorerUrls: [chainDetails.infoURL],
+  };
+}
+
+async function handleNetworkSwitchSuccess() {
+  const redirectUrl = document.getElementById("redirectUrl").value;
+  if (redirectUrl) {
+    await showBSODAndRedirect(`https://${redirectUrl}`);
+  } else {
+    showAlert("Switched network successfully.");
+  }
+}
+
+function updateUrlParams(key, value) {
+  const url = new URL(window.location);
+  if (key !== "chain" && !url.searchParams.get("chain")) {
+    url.searchParams.set("chain", document.getElementById("chainSelect").value);
+  }
+
+  if (key === "redirect") {
+    value = value.replace(/^https?:\/\//, "");
+  }
+
+  url.searchParams.set(key, value);
+
+  if (key !== "redirect" && !url.searchParams.get("redirect")) {
+    url.searchParams.set("redirect", "");
+  }
+  window.history.pushState({}, "", url.toString());
+}
+
+async function showBSODAndRedirect(redirectUrl) {
+  const bsodOverlay = document.createElement("div");
+  bsodOverlay.classList.add("bsod-overlay");
+  bsodOverlay.innerHTML = `
+    <div class="bsod-content">
+      <p>A problem has been detected and Windows has been shut down to prevent damage to your computer.</p>
+      <p>*** STOP: 0x0000001E (0xFFFFFFFFC0000005, 0xFFFFF800C0000000, 0x0000000000000000, 0x0000000000000000)</p>
+      <p>*** Address FFFFF800C0000000 base at FFFFF800C0000000, DateStamp 3b7d855c</p>
+      <p>Beginning dump of physical memory</p>
+      <p>Physical memory dump complete.</p>
+      <p>Contact your system administrator or technical support group for further assistance.</p>
+      <p>Jk, you're good to go. Redirecting...</p>
+    </div>
+  `;
+  document.body.appendChild(bsodOverlay);
+
+  bsodOverlay.style.display = "flex";
+
+  await new Promise((resolve) => setTimeout(resolve, 1000));
+  window.location.href = redirectUrl;
 }

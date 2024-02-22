@@ -6,32 +6,36 @@
     <link rel="icon" href="favicon.ico" type="image/x-icon" />
     <script defer src="/_vercel/insights/script.js"></script>
     <link rel="stylesheet" href="style.css" />
-    <title>MetaMask Network Switcher</title>
+    <title>ChainSwitch</title>
     <meta name="description" content="Simple network switcher." />
   </head>
   <body>
     <div class="window">
       <div class="title-bar">
-        <div class="title-bar-text">MetaMask Network Switcher</div>
+        <div class="title-bar-text">chainswitch.exe</div>
       </div>
       <div class="window-body">
-        <p>
-          Select a network to add or switch to it. If a redirect URL is provided, you will be redirected after switching
-          networks.
-        </p>
+        <p>Select a network. If URL is provided you will be redirected after switching.</p>
         <div class="window-actions">
           <select id="chainSelect"></select>
           <div class="url-input">
-            <span>https://</span><input type="text" id="redirectUrl" placeholder="example.com" />
+            <span id="urlTag">https://</span><input type="text" id="redirectUrl" placeholder="sushi.com/swap" />
           </div>
           <div class="button-container">
-            <button id="switchNetwork" class="retro-btn">Add/Switch Chain</button>
+            <button id="switchNetwork" class="retro-btn">Switch Chains</button>
             <div class="button-row">
               <button id="copyLink" class="retro-btn">Copy ChainSwitch URL</button>
               <button id="goToLink" class="retro-btn">Go to Link</button>
             </div>
           </div>
         </div>
+      </div>
+    </div>
+    <div id="alertModal" class="modal">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <div id="alertMessage"></div>
+        <button id="closeAlert" class="retro-btn">Close</button>
       </div>
     </div>
     <script src="chains.js"></script>
