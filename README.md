@@ -1,7 +1,12 @@
+<p align="center">
+  <a href="https://chainswitch.xyz" target="_blank">
+    <img width="500" alt="image" src="https://github.com/Markeljan/chainswitch/assets/12901349/0cec0c42-ee80-48a6-9a44-3424b99b9369">
+  </a>
+</p>
+
 # ChainSwitch
 
 Welcome to ChainSwitch, your gateway to seamless network transitions in the Ethereum Virtual Machine (EVM) ecosystem. ChainSwitch is a tool designed to facilitate the easy switch of blockchain networks before accessing decentralized applications (dApps). This ensures that users are always on the correct network required by the dApp they wish to interact with, enhancing the user experience and preventing common errors associated with network mismatches.
-
 ## Features
 
 - **Network Switching**: ChainSwitch enables users to switch blockchain networks with just one click, ensuring they are on the correct network for their intended actions.
