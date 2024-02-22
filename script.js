@@ -58,6 +58,12 @@ function setupRedirectFromUrl() {
   if (redirectUrlInput) {
     redirectUrlInput.value = decodeURIComponent(redirectParam).replace(/^https?:\/\//, "");
   }
+
+  document.getElementById("redirectUrl")?.addEventListener("input", (e) => {
+    e.target.value = e.target.value.replace(/^https?:\/\//, "");
+    updateGoToLinkButtonState();
+    updateUrlParams("redirect", e.target.value);
+  });
 }
 
 function setupEventListeners() {
@@ -269,6 +275,8 @@ async function showBSODAndRedirect(redirectUrl) {
 
   bsodOverlay.style.display = "flex";
 
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  window.location.href = redirectUrl;
+  await new Promise((resolve) => setTimeout(resolve, 1500));
+
+  // Open the redirectUrl in same tab
+  window.open(redirectUrl, "_self");
 }
