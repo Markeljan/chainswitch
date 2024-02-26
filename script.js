@@ -118,13 +118,13 @@ async function switchNetworkListener() {
   }
 
   const chainSelect = document.getElementById("chainSelect");
-  const currentChain = await getCurrentChain();
   const selectedChainName = chainSelect.value;
   const chainDetails = CHAINS.find((chain) => chain.name === selectedChainName);
 
-  if (!chainDetails || chainDetails.chainId === currentChain) {
-    return showAlert(chainDetails ? "You are already on the selected network." : "Please select a valid chain.");
+  if (!chainDetails) {
+    return showAlert("Please select a valid chain.");
   }
+
   await switchNetwork(chainDetails);
 }
 
