@@ -4,6 +4,20 @@ async function initializeApp() {
   setupChainDropdown();
   setupRedirectFromUrl();
   setupEventListeners();
+  updateSwitchNetworkButtonText();
+}
+
+// Detect if the user is on a mobile device
+function isMobileDevice() {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+// Create a MetaMask deeplink for switching networks
+function createMetaMaskDeeplink() {
+  // get url params to append to the deeplink
+  const urlParams = new URLSearchParams(window.location.search).toString();
+
+  return `https://metamask.app.link/dapp/chainswitch.xyz/?${urlParams}`;
 }
 
 async function setupChainDropdown() {
@@ -85,7 +99,23 @@ function setupNetworkSwitchListener() {
 }
 
 async function switchNetworkListener() {
-  if (!window.ethereum) return showAlert("No wallet detected.");
+  // Check if the user is on a mobile device and window.ethereum is not available
+  if (isMobileDevice() && !window.ethereum) {
+    const chainSelect = document.getElementById("chainSelect");
+    const selectedChainName = chainSelect.value;
+    const chainDetails = CHAINS.find((chain) => chain.name === selectedChainName);
+
+    if (!chainDetails) {
+      return showAlert("Please select a valid chain.");
+    }
+
+    // Use a deeplink to redirect to MetaMask for mobile users
+    const deeplink = createMetaMaskDeeplink(chainDetails);
+    window.location.href = deeplink; // Redirect the user to MetaMask
+    return;
+  } else if (!window.ethereum) {
+    return showAlert("No wallet detected.");
+  }
 
   const chainSelect = document.getElementById("chainSelect");
   const currentChain = await getCurrentChain();
@@ -95,7 +125,6 @@ async function switchNetworkListener() {
   if (!chainDetails || chainDetails.chainId === currentChain) {
     return showAlert(chainDetails ? "You are already on the selected network." : "Please select a valid chain.");
   }
-
   await switchNetwork(chainDetails);
 }
 
@@ -109,8 +138,20 @@ function setupUrlParamListeners() {
   document.getElementById("redirectUrl")?.addEventListener("input", (e) => {
     updateGoToLinkButtonState();
     updateUrlParams("redirect", e.target.value);
+    updateSwitchNetworkButtonText();
   });
 }
+
+function updateSwitchNetworkButtonText() {
+  const switchNetworkButton = document.getElementById("switchNetwork");
+  const redirectUrl = document.getElementById("redirectUrl").value;
+  if (redirectUrl) {
+    switchNetworkButton.textContent = "Switch and Go";
+  } else {
+    switchNetworkButton.textContent = "Chain Switch";
+  }
+}
+
 function updateGoToLinkButtonState() {
   const goToLinkButton = document.getElementById("goToLink");
   const redirectUrl = document.getElementById("redirectUrl").value;
@@ -190,19 +231,27 @@ function closeAlert() {
 }
 
 async function switchNetwork(chainDetails) {
-  try {
-    await window.ethereum.request({
-      method: "wallet_switchEthereumChain",
-      params: [{ chainId: `0x${chainDetails.chainId.toString(16)}` }],
-    });
-    handleNetworkSwitchSuccess();
+  if (isMobileDevice()) {
+    // Use MetaMask deeplink for mobile users
+    const deeplink = createMetaMaskDeeplink();
+    window.open(deeplink, "_blank");
     return true;
-  } catch (error) {
-    if (error.code === 4902) {
-      return tryAddingNewChain(chainDetails);
+  } else {
+    // Use the existing logic for non-mobile users
+    try {
+      await window.ethereum.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: `0x${chainDetails.chainId.toString(16)}` }],
+      });
+      handleNetworkSwitchSuccess();
+      return true;
+    } catch (error) {
+      if (error.code === 4902) {
+        return tryAddingNewChain(chainDetails);
+      }
+      console.error(error);
+      return false;
     }
-    console.error(error);
-    return false;
   }
 }
 
