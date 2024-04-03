@@ -5,13 +5,6 @@ async function initializeApp() {
   setupRedirectFromUrl();
   setupEventListeners();
   updateSwitchNetworkButtonText();
-
-  const getStxToolsTokens = async () => {
-    const response = await fetch("https://api.stxtools.io/tokens");
-    return await response.json();
-  };
-
-  console.log("getStxToolsTokens", await getStxToolsTokens());
 }
 
 // Detect if the user is on a mobile device
